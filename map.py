@@ -20,6 +20,7 @@ def freeze(win):
 win = build(name,window_size)
 pop = [[0,0]]
 f = FireFly(win,pop,factor,grid_size)
+print(pop)
 sleep(2)
-f.flash()
-freeze(win)
+#f.flash()
+#freeze(win)

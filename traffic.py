@@ -4,7 +4,8 @@ from time import sleep , time
 from operator import itemgetter
 from random import randint
 
-q = Queue()
+in_q = Queue()
+out_q = Queue()
 p = 10
 
 def dist(fly1,fly2):
@@ -16,6 +17,10 @@ def nearestNeighbor(fly,grid):
     neigh = [ [f,dist(fly,f)] for f in grid ]
     neigh = sorted(neigh,key=lambda k:k[1])[1:]
     #print(neigh)
+    if not(len(neigh)):
+        print("lonely")
+        return list()
+    
     val = neigh[0][1]
     res = list()
     for elt in neigh:
@@ -35,59 +40,37 @@ def collectFlies(queue,nb_pop):
     return grid
 
 def broadcast(queue,data,neighs):
-    for n in neighs[data[0]]:
-        queue.put([n,data[1]])
+    for n in neighs[data]:
+        #print(n)
+        queue.put(n)
         
-def tunnel(queue,nb_pop):
-    grid = collectFlies(queue,nb_pop)
+def tunnel(in_q,out_q,nb_pop):
+    grid = collectFlies(in_q,nb_pop)
     #print(grid)
     neighs = dict()
     for fly in grid :
         neighs[str(fly)]=nearestNeighbor(fly,grid)
     #print(neighs)
     while True:
-        data = queue.get()
-        queue.task_done()
+        data = in_q.get()
+        in_q.task_done()
         print(data)
-        broadcast(queue,data,neighs)
+        broadcast(out_q,data,neighs)
         #print(neighs[data[0]])
-        
-def flyWriter(queue,coord,freq,t_gap):
-    queue.put(coord)
-    sleep(t_gap)
-    print("up")
-    while True:
-        while(not(isItMe(queue,coord,freq))) :
-            x = randint( 1, 100 )
-            if x <= p:
-                print("random")
-                queue.put([str(coord),"ping"])
-            else:
-                sleep(freq)
-        
-        #print([str(coord),data])
-        queue.put([str(coord),"pong"])
-        sleep(freq)
 
 def isItMe(queue,coord,freq):
-    if queue.empty():
-        return False
-    data = queue.get()
-    queue.task_done()
-    #print(data)
-    if data[0]==coord:
-        print("me")
-        return True
-    else:
-        queue.put(data)
-        return False
+        if queue.empty():
+            return False
+        data = queue.get()
+        queue.task_done()
+        #print(data)
+        if data==str(coord):
+            #print("me")
+            return True
+        else:
+            queue.put(data)
+            return False
         
-t1 = Thread(target=flyWriter,args=(q,[1,2],2,3))
-t2 = Thread(target=flyWriter,args=(q,[3,4],2,3))
-t3 = Thread(target=tunnel,args=(q,2))
-
-t1.start()
-t2.start()
-t3.start()
-
-#nearestNeighbor([1,1],[[1,1],[1,2],[2,1],[5,4],[3,1]])
+#test()
+t = Thread(target=tunnel,args=(in_q,out_q,2))
+t.start()
