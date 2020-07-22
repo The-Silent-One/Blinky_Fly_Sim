@@ -2,15 +2,15 @@ from graphics import *
 from time import sleep
 from random import randint
 from traffic import *
+from writer import *
 
 freq = 1
 gray = "#87857e"
 yellow = "#b9f043"
-t_snooze = 3
 
 class FireFly:
     
-    def __init__(self,win,pop,factor,grid_size):
+    def __init__(self,win,pop,factor,grid_size,list_class_threads):
         
         self.size = int( grid_size / 5 )
         x , y = 0 , 0
@@ -57,33 +57,16 @@ class FireFly:
         self.wing.setOutline(gray)
         
         self.coord = [self.gridx,self.gridy]
-        self.broadcast = Thread(target=self.flyWriter,args=(in_q,out_q,draw_q))
+        
+        self.writer = FlyWriter()
+        self.broadcast = Thread(target=self.writer.run,args=(self,in_q,out_q,draw_q))
         
         #self.broadcast.setDaemon(True)
         self.broadcast.start()
+        list_class_threads.append(self.writer)
         
     def flash(self):
         self.abdo.setFill(yellow)
         sleep(freq)
         self.abdo.setFill(gray)
     
-    def flyWriter(self,in_q,out_q,draw_q):
-        in_q.put(self.coord)
-        sleep(t_snooze)
-        print("up")
-        while True:
-            while(not(isItMe(out_q,self.coord,freq))) :
-                x = randint( 1, 100 )
-                if x <= p:
-                    print("random")
-                    draw_q.put(str(self.coord))
-                    in_q.put(str(self.coord))
-                    
-                else:
-                    sleep(freq)
-            
-            #print([str(coord)])
-            in_q.put(str(self.coord))
-            draw_q.put(str(self.coord))
-            sleep(freq)
-

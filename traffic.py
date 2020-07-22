@@ -3,6 +3,7 @@ from threading import Thread
 from time import sleep , time
 from operator import itemgetter
 from random import randint
+from stoppableThread import *
 
 in_q = Queue()
 out_q = Queue()
@@ -44,20 +45,21 @@ def broadcast(queue,data,neighs):
     for n in neighs[data]:
         #print("neighbor : {}".format(n))
         queue.put(n)
-        
-def tunnel(in_q,out_q,draw_q,nb_pop):
-    grid = collectFlies(in_q,nb_pop)
-    #print(grid)
-    neighs = dict()
-    for fly in grid :
-        neighs[str(fly)]=nearestNeighbor(fly,grid)
-    #print(neighs)
-    while True:
-        data = in_q.get()
-        in_q.task_done()
-        #print(data)
-        broadcast(draw_q,data,neighs)
-        #print(neighs[data[0]])
+       
+class Tunnel(StoppableThread):
+    def run(self,in_q,out_q,draw_q,nb_pop):
+        grid = collectFlies(in_q,nb_pop)
+        #print(grid)
+        neighs = dict()
+        for fly in grid :
+            neighs[str(fly)]=nearestNeighbor(fly,grid)
+        #print(neighs)
+        while self._running:
+            data = in_q.get()
+            in_q.task_done()
+            #print(data)
+            broadcast(draw_q,data,neighs)
+            #print(neighs[data[0]])
 
 def isItMe(queue,coord,freq):
         if queue.empty():
@@ -73,5 +75,3 @@ def isItMe(queue,coord,freq):
             return False
         
 #test()
-t = Thread(target=tunnel,args=(in_q,out_q,draw_q,2))
-t.start()
