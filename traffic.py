@@ -6,6 +6,7 @@ from random import randint
 
 in_q = Queue()
 out_q = Queue()
+draw_q = Queue()
 p = 10
 
 def dist(fly1,fly2):
@@ -41,10 +42,10 @@ def collectFlies(queue,nb_pop):
 
 def broadcast(queue,data,neighs):
     for n in neighs[data]:
-        #print(n)
+        #print("neighbor : {}".format(n))
         queue.put(n)
         
-def tunnel(in_q,out_q,nb_pop):
+def tunnel(in_q,out_q,draw_q,nb_pop):
     grid = collectFlies(in_q,nb_pop)
     #print(grid)
     neighs = dict()
@@ -54,8 +55,8 @@ def tunnel(in_q,out_q,nb_pop):
     while True:
         data = in_q.get()
         in_q.task_done()
-        print(data)
-        broadcast(out_q,data,neighs)
+        #print(data)
+        broadcast(draw_q,data,neighs)
         #print(neighs[data[0]])
 
 def isItMe(queue,coord,freq):
@@ -72,5 +73,5 @@ def isItMe(queue,coord,freq):
             return False
         
 #test()
-t = Thread(target=tunnel,args=(in_q,out_q,2))
+t = Thread(target=tunnel,args=(in_q,out_q,draw_q,2))
 t.start()

@@ -57,26 +57,17 @@ class FireFly:
         self.wing.setOutline(gray)
         
         self.coord = [self.gridx,self.gridy]
-        self.broadcast = Thread(target=self.flyWriter,args=(in_q,out_q))
+        self.broadcast = Thread(target=self.flyWriter,args=(in_q,out_q,draw_q))
         
+        #self.broadcast.setDaemon(True)
         self.broadcast.start()
-        self.draw_q = Queue()
-        self.flash()
         
     def flash(self):
-        try:
-            while True:
-                data = self.draw_q.get_nowait()
-                print(data)
-                if data:
-                    self.abdo.setFill(yellow)
-                    sleep(freq)
-                    self.abdo.setFill(gray)
-        except Exception as e:
-            #print(e)
-            pass
+        self.abdo.setFill(yellow)
+        sleep(freq)
+        self.abdo.setFill(gray)
     
-    def flyWriter(self,in_q,out_q):
+    def flyWriter(self,in_q,out_q,draw_q):
         in_q.put(self.coord)
         sleep(t_snooze)
         print("up")
@@ -85,13 +76,14 @@ class FireFly:
                 x = randint( 1, 100 )
                 if x <= p:
                     print("random")
+                    draw_q.put(str(self.coord))
                     in_q.put(str(self.coord))
-                    self.draw_q.put("f")
+                    
                 else:
                     sleep(freq)
             
             #print([str(coord)])
             in_q.put(str(self.coord))
-            self.draw_q.put("f")
+            draw_q.put(str(self.coord))
             sleep(freq)
 

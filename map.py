@@ -12,15 +12,31 @@ def build(name,window_size):
     win = GraphWin(name,window_size,window_size)
     return win
 
-        
-def freeze(win):
+def getFly(coord,fly_pop):
+    for f in fly_pop:
+        if str(f.coord)==coord:
+            return f
+    return None
+
+def flashThis(coord,fly_pop):
+    f = getFly(coord,fly_pop)
+    f.flash()
+    
+def kill(win):
     win.getMouse()
     win.close()
     
 win = build(name,window_size)
 pop = [[0,0]]
-f = FireFly(win,pop,factor,grid_size)
+fly_pop = list()
+
+for i in range(2):
+    fly_pop.append(FireFly(win,pop,factor,grid_size))
 print(pop)
-sleep(2)
-#f.flash()
-#freeze(win)
+
+while True:
+    while draw_q.empty():
+        pass
+    data = draw_q.get_nowait()
+    print("data {}".format(data))
+    flashThis(data,fly_pop)
